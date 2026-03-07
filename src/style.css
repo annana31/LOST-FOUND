@@ -253,7 +253,7 @@ tbody tr:hover{
 }
 
 .status-lost{
-  background:#d32f2f; /* red */
+  background:#0D1A63; /* red */
 }
 
 .status-found{
@@ -261,8 +261,8 @@ tbody tr:hover{
 }
 
 .status-returned{
-  background:#FFD150;
-  color:#0D1A63;
+  background:#0D1A63;
+  color:#ffffff;
 }
 
 /* ACTION BUTTONS */
@@ -277,21 +277,38 @@ table button{
 }
 
 table button:first-child{
-  background:#FFD150; /* edit */
-  color:#0D1A63;
+  background:#eeedeb; /* edit */
+  color:#000000;
 }
 
 table button:first-child:hover{
-  background:#e6c000;
+  background:#979899;
 }
 
 table button:last-child{
-  background:#d32f2f; /* delete */
-  color:white;
+  background:#FFD150; 
+  color:#0D1A63;
 }
 
 table button:last-child:hover{
-  background:#b71c1c;
+  background:#e6c000;
+}
+
+/* DELETE BUTTON */
+.delete-btn {
+  background-color: #eeedeb; /* bright red */
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.delete-btn:hover {
+  background-color: #979899; /* lighter red on hover */
+  transform: scale(1.05);
 }
 
 /* MODAL OVERLAY */

@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import LostItems from "./pages/LostItems";
 import FoundItems from "./pages/FoundItems";
 import Register from "./pages/Register";
+import ReturnedItems from "./pages/ReturnedItems";
 
 function App() {
   // Shared Lost Items
@@ -20,15 +21,22 @@ function App() {
     { id: 3, name: "Keys", description: "House keys", location: "Gym", date: "March 4", finder: "Clara", status: "Found" }
   ]);
 
-  // Function to move Lost → Found
-  const markAsFound = (item) => {
-    // Remove from lost
-    setLostItems(lostItems.filter(i => i.id !== item.id));
+  // Shared Returned Items
+  const [returnedItems, setReturnedItems] = useState([]);
 
-    // Add to found
+  // Move Lost → Found
+  const markAsFound = (item) => {
+    setLostItems(lostItems.filter(i => i.id !== item.id));
     const newFoundItem = { ...item, finder: item.contact, status: "Found" };
-    delete newFoundItem.contact; // remove contact field
+    delete newFoundItem.contact;
     setFoundItems([newFoundItem, ...foundItems]);
+  };
+
+  // Move Found → Returned
+  const markAsReturned = (item) => {
+    setFoundItems(foundItems.filter(i => i.id !== item.id));
+    const returnedItem = { ...item, status: "Returned" };
+    setReturnedItems([returnedItem, ...returnedItems]);
   };
 
   return (
@@ -36,7 +44,13 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard lostItems={lostItems} foundItems={foundItems} />} />
+        <Route path="/dashboard" element={
+          <Dashboard 
+            lostItems={lostItems} 
+            foundItems={foundItems} 
+            returnedItems={returnedItems}
+          />
+        } />
         <Route 
           path="/lost-items" 
           element={
@@ -55,6 +69,18 @@ function App() {
             <FoundItems 
               foundItems={foundItems} 
               setFoundItems={setFoundItems} 
+              returnedItems={returnedItems}         // ✅ added
+              setReturnedItems={setReturnedItems}   // ✅ added
+              markAsReturned={markAsReturned}       // optional
+            />
+          } 
+        />
+        <Route 
+          path="/returned-items" 
+          element={
+            <ReturnedItems 
+              returnedItems={returnedItems} 
+              setReturnedItems={setReturnedItems} 
             />
           } 
         />

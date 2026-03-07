@@ -91,9 +91,9 @@ function LostItems({ lostItems, setLostItems, foundItems, setFoundItems }) {
                 <td>{item.contact}</td>
                 <td><span className={`status-badge ${getStatusClass(item.status)}`}>{item.status}</span></td>
                 <td>
-                  <button onClick={() => openEdit(item)}>Edit</button>
-                  <button onClick={() => openDelete(item)}>Delete</button>
-                  <button onClick={() => markAsFound(item)}>Mark as Found</button>
+                <button className="edit-btn" onClick={() => openEdit(item)}>Edit</button>
+                <button className="delete-btn" onClick={() => openDelete(item)}>Delete</button>
+                <button className="return-btn" onClick={() => markAsReturned(item)}>Mark as Returned</button>
                 </td>
               </tr>
             ))}

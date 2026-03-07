@@ -1,7 +1,7 @@
 import Navbar from "../components/Navbar";
 import { useState } from "react";
 
-function FoundItems({ foundItems, setFoundItems }) {
+function FoundItems({ foundItems, setFoundItems, returnedItems, setReturnedItems }) {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
@@ -41,7 +41,15 @@ function FoundItems({ foundItems, setFoundItems }) {
     }
   };
 
-  return (
+   const markAsReturned = (item) => {
+    const updatedItem = { ...item, status: "Returned" };
+    // Remove from Found Items
+    setFoundItems(foundItems.filter(i => i.id !== item.id));
+    // Add to Returned Items
+    setReturnedItems([updatedItem, ...returnedItems]);
+  };
+
+   return (
     <div className="container">
       <Navbar />
       <div className="content">
@@ -60,7 +68,6 @@ function FoundItems({ foundItems, setFoundItems }) {
               <th>Actions</th>
             </tr>
           </thead>
-
           <tbody>
             {foundItems.map(item => (
               <tr key={item.id}>
@@ -75,8 +82,9 @@ function FoundItems({ foundItems, setFoundItems }) {
                   </span>
                 </td>
                 <td>
-                  <button onClick={() => openEdit(item)}>Edit</button>
-                  <button onClick={() => openDelete(item)}>Delete</button>
+                <button className="edit-btn" onClick={() => openEdit(item)}>Edit</button>
+                <button className="delete-btn" onClick={() => openDelete(item)}>Delete</button>
+                <button className="return-btn" onClick={() => markAsReturned(item)}>Mark as Returned</button>
                 </td>
               </tr>
             ))}

@@ -16,6 +16,7 @@ function Navbar() {
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/lost-items">Lost Items</Link>
         <Link to="/found-items">Found Items</Link>
+        <Link to="/returned-items">Returned Items</Link> {/* New */}
       </div>
 
       <div className="nav-bottom">
