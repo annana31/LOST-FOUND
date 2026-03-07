@@ -293,3 +293,52 @@ table button:last-child{
 table button:last-child:hover{
   background:#b71c1c;
 }
+
+/* MODAL OVERLAY */
+.modal-overlay{
+  position:fixed;
+  top:0; left:0;
+  width:100vw; height:100vh;
+  background:rgba(0,0,0,0.5);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+}
+
+/* MODAL BOX */
+.modal{
+  background:white;
+  padding:30px;
+  width:400px;
+  border-radius:12px;
+  box-shadow:0 12px 25px rgba(0,0,0,0.2);
+}
+
+.modal h2{
+  margin-bottom:20px;
+  color:#0D1A63;
+}
+
+.modal input{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border:1px solid #ccc;
+  border-radius:8px;
+}
+
+.modal button{
+  padding:10px 16px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  background:#FFD150;
+  color:#0D1A63;
+  transition:0.3s;
+}
+
+.modal button:hover{
+  background:#e6c000;
+}
