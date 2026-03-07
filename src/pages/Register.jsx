@@ -1,12 +1,15 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 function Register() {
 
   const navigate = useNavigate();
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const handleRegister = (e) => {
     e.preventDefault();
-    // You can later add API call to backend here
     alert("Account created successfully!");
     navigate("/");
   };
@@ -19,8 +22,35 @@ function Register() {
 
         <form onSubmit={handleRegister}>
           <input type="text" placeholder="Username" required />
-          <input type="password" placeholder="Password" required />
-          <input type="password" placeholder="Confirm Password" required />
+
+          <div className="password-field">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              required
+            />
+            <span
+              className="eye-icon"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              👁
+            </span>
+          </div>
+
+          <div className="password-field">
+            <input
+              type={showConfirm ? "text" : "password"}
+              placeholder="Confirm Password"
+              required
+            />
+            <span
+              className="eye-icon"
+              onClick={() => setShowConfirm(!showConfirm)}
+            >
+              👁
+            </span>
+          </div>
+
           <button type="submit">Register</button>
         </form>
 

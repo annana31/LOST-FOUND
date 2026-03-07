@@ -359,3 +359,27 @@ table button:last-child:hover{
 .modal button:hover{
   background:#e6c000;
 }
+
+.password-field{
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field input{
+  width: 100%;
+  padding-right: 40px;
+}
+
+.eye-icon{
+  position: absolute;
+  right: 12px;
+  margin-top: -20px;
+  cursor: pointer;
+  font-size: 22px;
+  color: #777;
+}
+
+.eye-icon:hover{
+  color: #333;
+}
