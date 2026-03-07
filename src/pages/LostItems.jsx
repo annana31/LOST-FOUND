@@ -1,6 +1,47 @@
 import Navbar from "../components/Navbar";
+import { useState } from "react";
 
 function LostItems() {
+
+  // Example dummy data
+  const [lostItems, setLostItems] = useState([
+    {
+      id: 1,
+      name: "Wallet",
+      description: "Black leather wallet",
+      location: "Library",
+      date: "March 5",
+      contact: "Anna",
+      status: "Lost"
+    },
+    {
+      id: 2,
+      name: "Umbrella",
+      description: "Blue folding umbrella",
+      location: "Cafeteria",
+      date: "March 6",
+      contact: "Ben",
+      status: "Found"
+    },
+    {
+      id: 3,
+      name: "Keys",
+      description: "House keys with keychain",
+      location: "Gym",
+      date: "March 4",
+      contact: "Clara",
+      status: "Returned"
+    }
+  ]);
+
+  const getStatusClass = (status) => {
+    switch(status){
+      case "Lost": return "status-lost";
+      case "Found": return "status-found";
+      case "Returned": return "status-returned";
+      default: return "";
+    }
+  }
 
   return (
     <div className="container">
@@ -14,7 +55,6 @@ function LostItems() {
         <button className="add-btn">Add Lost Item</button>
 
         <table>
-
           <thead>
             <tr>
               <th>Item Name</th>
@@ -28,20 +68,24 @@ function LostItems() {
           </thead>
 
           <tbody>
-
-            <tr>
-              <td>Wallet</td>
-              <td>Black leather wallet</td>
-              <td>Library</td>
-              <td>March 5</td>
-              <td>Anna</td>
-              <td>Lost</td>
-              <td>
-                <button>Edit</button>
-                <button>Delete</button>
-              </td>
-            </tr>
-
+            {lostItems.map(item => (
+              <tr key={item.id}>
+                <td>{item.name}</td>
+                <td>{item.description}</td>
+                <td>{item.location}</td>
+                <td>{item.date}</td>
+                <td>{item.contact}</td>
+                <td>
+                  <span className={`status-badge ${getStatusClass(item.status)}`}>
+                    {item.status}
+                  </span>
+                </td>
+                <td>
+                  <button>Edit</button>
+                  <button>Delete</button>
+                </td>
+              </tr>
+            ))}
           </tbody>
 
         </table>
