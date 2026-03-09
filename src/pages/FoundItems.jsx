@@ -1,11 +1,27 @@
 import Navbar from "../components/Navbar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
-function FoundItems({ foundItems, setFoundItems, returnedItems, setReturnedItems }) {
+function FoundItems({ returnedItems, setReturnedItems }) {
+  const [foundItems, setFoundItems] = useState([]);
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
   const [form, setForm] = useState({ name: "", description: "", location: "", date: "", finder: "", status: "Found" });
+
+  // Fetch items on component mount
+  useEffect(() => {
+    fetchFoundItems();
+  }, []);
+
+  const fetchFoundItems = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/found-items/");
+      setFoundItems(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const openEdit = (item) => {
     setCurrentItem(item);
@@ -13,13 +29,18 @@ function FoundItems({ foundItems, setFoundItems, returnedItems, setReturnedItems
     setShowEdit(true);
   };
 
-  const saveEdit = () => {
-    if (currentItem?.id) {
-      setFoundItems(foundItems.map(i => i.id === currentItem.id ? { ...i, ...form } : i));
-    } else {
-      setFoundItems([{ ...form, id: Date.now(), status: "Found" }, ...foundItems]);
+  const saveEdit = async () => {
+    try {
+      if (currentItem?.id) {
+        await axios.put(`http://localhost:8000/api/found-items/${currentItem.id}/`, form);
+      } else {
+        await axios.post("http://localhost:8000/api/found-items/add/", form);
+      }
+      fetchFoundItems();
+      setShowEdit(false);
+    } catch (err) {
+      console.error(err);
     }
-    setShowEdit(false);
   };
 
   const openDelete = (item) => {
@@ -27,29 +48,42 @@ function FoundItems({ foundItems, setFoundItems, returnedItems, setReturnedItems
     setShowDelete(true);
   };
 
-  const confirmDelete = () => {
-    setFoundItems(foundItems.filter(i => i.id !== currentItem.id));
-    setShowDelete(false);
-  };
-
-  const getStatusClass = (status) => {
-    switch(status){
-      case "Lost": return "status-lost";
-      case "Found": return "status-found";
-      case "Returned": return "status-returned";
-      default: return "";
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:8000/api/found-items/${currentItem.id}/delete/`);
+      fetchFoundItems();
+      setShowDelete(false);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-   const markAsReturned = (item) => {
-    const updatedItem = { ...item, status: "Returned" };
-    // Remove from Found Items
-    setFoundItems(foundItems.filter(i => i.id !== item.id));
-    // Add to Returned Items
-    setReturnedItems([updatedItem, ...returnedItems]);
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "Lost":
+        return "status-lost";
+      case "Found":
+        return "status-found";
+      case "Returned":
+        return "status-returned";
+      default:
+        return "";
+    }
   };
 
-   return (
+  const markAsReturned = async (item) => {
+    try {
+      await axios.put(`http://localhost:8000/api/found-items/${item.id}/mark-returned/`);
+      // Remove from foundItems locally
+      setFoundItems(foundItems.filter((i) => i.id !== item.id));
+      // Add to returnedItems locally
+      setReturnedItems([{ ...item, status: "Returned" }, ...returnedItems]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
     <div className="container">
       <Navbar />
       <div className="content">
@@ -69,7 +103,7 @@ function FoundItems({ foundItems, setFoundItems, returnedItems, setReturnedItems
             </tr>
           </thead>
           <tbody>
-            {foundItems.map(item => (
+            {foundItems.map((item) => (
               <tr key={item.id}>
                 <td>{item.name}</td>
                 <td>{item.description}</td>
@@ -77,14 +111,12 @@ function FoundItems({ foundItems, setFoundItems, returnedItems, setReturnedItems
                 <td>{item.date}</td>
                 <td>{item.finder}</td>
                 <td>
-                  <span className={`status-badge ${getStatusClass(item.status)}`}>
-                    {item.status}
-                  </span>
+                  <span className={`status-badge ${getStatusClass(item.status)}`}>{item.status}</span>
                 </td>
                 <td>
-                <button className="edit-btn" onClick={() => openEdit(item)}>Edit</button>
-                <button className="delete-btn" onClick={() => openDelete(item)}>Delete</button>
-                <button className="return-btn" onClick={() => markAsReturned(item)}>Mark as Returned</button>
+                  <button className="edit-btn" onClick={() => openEdit(item)}>Edit</button>
+                  <button className="delete-btn" onClick={() => openDelete(item)}>Delete</button>
+                  <button className="return-btn" onClick={() => markAsReturned(item)}>Mark as Returned</button>
                 </td>
               </tr>
             ))}
@@ -97,13 +129,13 @@ function FoundItems({ foundItems, setFoundItems, returnedItems, setReturnedItems
         <div className="modal-overlay">
           <div className="modal">
             <h2>{currentItem?.id ? "Edit Found Item" : "Add Found Item"}</h2>
-            <input placeholder="Item Name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
-            <input placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/>
-            <input placeholder="Location" value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/>
-            <input placeholder="Date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/>
-            <input placeholder="Finder" value={form.finder} onChange={e=>setForm({...form,finder:e.target.value})}/>
-            <div style={{marginTop:"15px", display:"flex", gap:"10px", justifyContent:"flex-end"}}>
-              <button onClick={()=>setShowEdit(false)}>Cancel</button>
+            <input placeholder="Item Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+            <input placeholder="Date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+            <input placeholder="Finder" value={form.finder} onChange={(e) => setForm({ ...form, finder: e.target.value })} />
+            <div style={{ marginTop: "15px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button onClick={() => setShowEdit(false)}>Cancel</button>
               <button onClick={saveEdit}>{currentItem?.id ? "Save" : "Add"}</button>
             </div>
           </div>
@@ -116,8 +148,8 @@ function FoundItems({ foundItems, setFoundItems, returnedItems, setReturnedItems
           <div className="modal">
             <h2>Confirm Delete</h2>
             <p>Are you sure you want to delete <strong>{currentItem.name}</strong>?</p>
-            <div style={{marginTop:"15px", display:"flex", gap:"10px", justifyContent:"flex-end"}}>
-              <button onClick={()=>setShowDelete(false)}>Cancel</button>
+            <div style={{ marginTop: "15px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button onClick={() => setShowDelete(false)}>Cancel</button>
               <button onClick={confirmDelete}>Delete</button>
             </div>
           </div>

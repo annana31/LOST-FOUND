@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-
+# LOGIN
 @api_view(['POST'])
 def login_user(request):
     username = request.data.get('username')
@@ -22,7 +22,7 @@ def login_user(request):
             "message": "Invalid username or password"
         })
 
-
+# REGISTER
 @api_view(['POST'])
 def register_user(request):
     username = request.data.get('username')
@@ -43,3 +43,54 @@ def register_user(request):
         "success": True,
         "message": "User registered successfully"
     })
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import FoundItem
+from .serializers import FoundItemSerializer
+
+
+# GET all found items
+@api_view(['GET'])
+def get_found_items(request):
+    items = FoundItem.objects.all().order_by('-id')
+    serializer = FoundItemSerializer(items, many=True)
+    return Response(serializer.data)
+
+
+# ADD found item
+@api_view(['POST'])
+def add_found_item(request):
+    serializer = FoundItemSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
+
+
+# UPDATE found item
+@api_view(['PUT'])
+def update_found_item(request, id):
+    item = FoundItem.objects.get(id=id)
+    serializer = FoundItemSerializer(item, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
+
+
+# DELETE found item
+@api_view(['DELETE'])
+def delete_found_item(request, id):
+    item = FoundItem.objects.get(id=id)
+    item.delete()
+    return Response({"message": "Item deleted"})
+
+
+# MARK AS RETURNED
+@api_view(['PUT'])
+def mark_returned(request, id):
+    item = FoundItem.objects.get(id=id)
+    item.status = "Returned"
+    item.save()
+    return Response({"message": "Item marked as returned"})

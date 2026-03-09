@@ -1,3 +1,14 @@
 from django.db import models
 
-# Create your models here.
+class FoundItem(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    location = models.CharField(max_length=200)
+    date = models.DateField()
+    finder = models.CharField(max_length=200)
+    status = models.CharField(max_length=20, default="Found")
+
+    def __str__(self):
+        return self.name
+    
+    
