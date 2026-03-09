@@ -2,6 +2,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from .models import FoundItem, ReturnedItem
+from .serializers import ReturnedItemSerializer
 
 # LOGIN
 @api_view(['POST'])
@@ -140,3 +142,36 @@ def mark_lost_returned(request, id):
     item.status = "Returned"
     item.save()
     return Response({"message": "Item marked as returned"})
+
+@api_view(['PUT'])
+def mark_returned(request, id):
+    item = FoundItem.objects.get(id=id)
+
+    # Update found item status
+    item.status = "Returned"
+    item.save()
+
+    # Save to ReturnedItem table
+    ReturnedItem.objects.create(
+        item_name=item.name,
+        finder_name=item.finder,
+        date_returned=item.date,
+        remarks="Item returned successfully"
+    )
+
+    return Response({"message": "Item marked as returned and stored in ReturnedItem table"})
+
+@api_view(['GET'])
+def get_returned_items(request):
+    items = ReturnedItem.objects.all().order_by('-id')
+    serializer = ReturnedItemSerializer(items, many=True)
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+def delete_returned_item(request, id):
+    try:
+        item = ReturnedItem.objects.get(id=id)
+        item.delete()
+        return Response({"message": "Returned item deleted"})
+    except ReturnedItem.DoesNotExist:
+        return Response({"error": "Item not found"}, status=404)

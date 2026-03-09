@@ -16,4 +16,7 @@ urlpatterns = [
     path('lost-items/update/<int:id>/', update_lost_item),
     path('lost-items/delete/<int:id>/', delete_lost_item),
     path('lost-items/return/<int:id>/', mark_lost_returned),
+    path('returned-items/', get_returned_items),
+    path('found-items/return/<int:id>/', mark_returned),
+    path('returned-items/delete/<int:id>/', delete_returned_item),
 ]

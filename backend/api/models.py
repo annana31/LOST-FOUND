@@ -24,9 +24,8 @@ class LostItem(models.Model):
     
 class ReturnedItem(models.Model):
     item_name = models.CharField(max_length=200)
-    owner_name = models.CharField(max_length=200)
+    description = models.TextField()
+    location = models.CharField(max_length=200)
+    finder_name = models.CharField(max_length=200)
     date_returned = models.DateField()
     remarks = models.TextField()
-
-    def __str__(self):
-        return self.item_name
