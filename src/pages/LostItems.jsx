@@ -133,7 +133,7 @@ function LostItems({ lostItems, setLostItems, foundItems, setFoundItems }) {
             <input placeholder="Item Name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
             <input placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})}/>
             <input placeholder="Location" value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/>
-            <input placeholder="Date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/>
+            <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}/>
             <input placeholder="Contact" value={form.contact} onChange={e=>setForm({...form,contact:e.target.value})}/>
             <div style={{marginTop:"15px", display:"flex", gap:"10px", justifyContent:"flex-end"}}>
               <button onClick={()=>setShowEdit(false)}>Cancel</button>

@@ -1,33 +1,59 @@
 import Navbar from "../components/Navbar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
-function ReturnedItems({ returnedItems, setReturnedItems }) {
+function ReturnedItems() {
+  const [returnedItems, setReturnedItems] = useState([]);
   const [showDelete, setShowDelete] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
+
+  // Fetch returned items on mount
+  useEffect(() => {
+    fetchReturnedItems();
+  }, []);
+
+  const fetchReturnedItems = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/returned-items/");
+      setReturnedItems(res.data);
+    } catch (error) {
+      console.error("Fetch Returned Items Error:", error);
+    }
+  };
 
   const openDelete = (item) => {
     setCurrentItem(item);
     setShowDelete(true);
   };
 
-  const confirmDelete = () => {
-    setReturnedItems(returnedItems.filter(item => item.id !== currentItem.id));
-    setShowDelete(false);
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(
+        `http://localhost:8000/api/returned-items/delete/${currentItem.id}/`
+      );
+      fetchReturnedItems();
+      setShowDelete(false);
+    } catch (error) {
+      console.error("Delete Error:", error.response?.data || error);
+    }
   };
 
   const getStatusClass = (status) => {
-    switch(status){
-      case "Lost": return "status-lost";
-      case "Found": return "status-found";
-      case "Returned": return "status-returned";
-      default: return "";
+    switch (status) {
+      case "Lost":
+        return "status-lost";
+      case "Found":
+        return "status-found";
+      case "Returned":
+        return "status-returned";
+      default:
+        return "";
     }
   };
 
   return (
     <div className="container">
       <Navbar />
-
       <div className="content">
         <h1>Returned Items</h1>
 
@@ -35,26 +61,24 @@ function ReturnedItems({ returnedItems, setReturnedItems }) {
           <thead>
             <tr>
               <th>Item Name</th>
-              <th>Description</th>
-              <th>Location</th>
-              <th>Date</th>
-              <th>Finder / Contact</th>
+              <th>Finder / Owner</th>
+              <th>Date Returned</th>
+              <th>Remarks</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {returnedItems.map(item => (
+            {returnedItems.map((item) => (
               <tr key={item.id}>
-                <td>{item.name}</td>
-                <td>{item.description}</td>
-                <td>{item.location}</td>
-                <td>{item.date}</td>
-                <td>{item.finder || item.contact}</td>
+                <td>{item.item_name}</td>
+                <td>{item.finder_name}</td>
+                <td>{item.date_returned}</td>
+                <td>{item.remarks}</td>
                 <td>
-                  <span className={`status-badge ${getStatusClass(item.status)}`}>
-                    {item.status}
+                  <span className={`status-badge ${getStatusClass("Returned")}`}>
+                    Returned
                   </span>
                 </td>
                 <td>
@@ -62,6 +86,13 @@ function ReturnedItems({ returnedItems, setReturnedItems }) {
                 </td>
               </tr>
             ))}
+            {returnedItems.length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ textAlign: "center" }}>
+                  No returned items found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -71,8 +102,17 @@ function ReturnedItems({ returnedItems, setReturnedItems }) {
         <div className="modal-overlay">
           <div className="modal">
             <h2>Confirm Delete</h2>
-            <p>Are you sure you want to delete <strong>{currentItem.name}</strong>?</p>
-            <div style={{marginTop:"15px", display:"flex", gap:"10px", justifyContent:"flex-end"}}>
+            <p>
+              Are you sure you want to delete <strong>{currentItem.item_name}</strong>?
+            </p>
+            <div
+              style={{
+                marginTop: "15px",
+                display: "flex",
+                gap: "10px",
+                justifyContent: "flex-end",
+              }}
+            >
               <button onClick={() => setShowDelete(false)}>Cancel</button>
               <button onClick={confirmDelete}>Delete</button>
             </div>

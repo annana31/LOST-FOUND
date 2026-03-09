@@ -30,33 +30,63 @@ function FoundItems({ returnedItems, setReturnedItems }) {
   };
 
   const saveEdit = async () => {
-    try {
-      if (currentItem?.id) {
-        await axios.put(`http://localhost:8000/api/found-items/${currentItem.id}/`, form);
-      } else {
-        await axios.post("http://localhost:8000/api/found-items/add/", form);
-      }
-      fetchFoundItems();
-      setShowEdit(false);
-    } catch (err) {
-      console.error(err);
+  try {
+
+    const payload = {
+      name: form.name,
+      description: form.description,
+      location: form.location,
+      date: form.date,
+      finder: form.finder,
+      status: "Found"
+    };
+
+    if (currentItem && currentItem.id) {
+
+      await axios.put(
+        `http://localhost:8000/api/found-items/update/${currentItem.id}/`,
+        payload
+      );
+
+    } else {
+
+      await axios.post(
+        "http://localhost:8000/api/found-items/add/",
+        payload
+      );
+
     }
-  };
+
+    fetchFoundItems();
+    setShowEdit(false);
+    setCurrentItem(null);
+
+  } catch (error) {
+    console.error("Edit Error:", error.response?.data || error);
+  }
+};
 
   const openDelete = (item) => {
     setCurrentItem(item);
     setShowDelete(true);
   };
 
-  const confirmDelete = async () => {
-    try {
-      await axios.delete(`http://localhost:8000/api/found-items/${currentItem.id}/delete/`);
-      fetchFoundItems();
-      setShowDelete(false);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+ const confirmDelete = async () => {
+  try {
+
+    await axios.delete(
+      `http://localhost:8000/api/found-items/delete/${currentItem.id}/`
+    );
+
+    fetchFoundItems();
+    setShowDelete(false);
+    setCurrentItem(null);
+
+  } catch (error) {
+    console.error("Delete Error:", error.response?.data || error);
+  }
+};
+
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -72,16 +102,18 @@ function FoundItems({ returnedItems, setReturnedItems }) {
   };
 
   const markAsReturned = async (item) => {
-    try {
-      await axios.put(`http://localhost:8000/api/found-items/${item.id}/mark-returned/`);
-      // Remove from foundItems locally
-      setFoundItems(foundItems.filter((i) => i.id !== item.id));
-      // Add to returnedItems locally
-      setReturnedItems([{ ...item, status: "Returned" }, ...returnedItems]);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  try {
+
+    await axios.put(
+      `http://localhost:8000/api/found-items/return/${item.id}/`
+    );
+
+    fetchFoundItems();
+
+  } catch (error) {
+    console.error("Return Error:", error.response?.data || error);
+  }
+};
 
   return (
     <div className="container">
@@ -132,7 +164,7 @@ function FoundItems({ returnedItems, setReturnedItems }) {
             <input placeholder="Item Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             <input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             <input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-            <input placeholder="Date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+            <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}/>
             <input placeholder="Finder" value={form.finder} onChange={(e) => setForm({ ...form, finder: e.target.value })} />
             <div style={{ marginTop: "15px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
               <button onClick={() => setShowEdit(false)}>Cancel</button>
