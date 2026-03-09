@@ -94,3 +94,49 @@ def mark_returned(request, id):
     item.status = "Returned"
     item.save()
     return Response({"message": "Item marked as returned"})
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import LostItem
+from .serializers import LostItemSerializer
+
+# GET all lost items
+@api_view(['GET'])
+def get_lost_items(request):
+    items = LostItem.objects.all().order_by('-id')
+    serializer = LostItemSerializer(items, many=True)
+    return Response(serializer.data)
+
+# ADD found item
+@api_view(['POST'])
+def add_lost_item(request):
+    serializer = LostItemSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+
+# UPDATE lost item
+@api_view(['PUT'])
+def update_lost_item(request, id):
+    item = LostItem.objects.get(id=id)
+    serializer = LostItemSerializer(item, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
+
+# DELETE lost item
+@api_view(['DELETE'])
+def delete_lost_item(request, id):
+    item = LostItem.objects.get(id=id)
+    item.delete()
+    return Response({"message": "Item deleted"})
+
+# MARK AS RETURNED
+@api_view(['PUT'])
+def mark_lost_returned(request, id):
+    item = LostItem.objects.get(id=id)
+    item.status = "Returned"
+    item.save()
+    return Response({"message": "Item marked as returned"})

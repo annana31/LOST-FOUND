@@ -11,4 +11,13 @@ class FoundItem(models.Model):
     def __str__(self):
         return self.name
     
-    
+class LostItem(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    location = models.CharField(max_length=200)
+    date = models.DateField()
+    contact = models.CharField(max_length=200)
+    status = models.CharField(max_length=20, default="Lost")  
+
+    def __str__(self):
+        return self.name

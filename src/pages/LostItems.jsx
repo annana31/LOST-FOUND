@@ -1,5 +1,6 @@
 import Navbar from "../components/Navbar";
 import React from "react";
+import axios from "axios"; // ✅ Add this for API calls
 
 function LostItems({ lostItems, setLostItems, foundItems, setFoundItems }) {
   const [showEdit, setShowEdit] = React.useState(false);
@@ -14,14 +15,25 @@ function LostItems({ lostItems, setLostItems, foundItems, setFoundItems }) {
     setShowEdit(true);
   };
 
-  // Save Add/Edit
-  const saveEdit = () => {
-    if (currentItem?.id) {
-      setLostItems(lostItems.map(i => i.id === currentItem.id ? { ...i, ...form } : i));
-    } else {
-      setLostItems([{ ...form, id: Date.now() }, ...lostItems]);
+  // Save Add/Edit → UPDATED to call backend
+  const saveEdit = async () => {
+    try {
+      if (currentItem?.id) {
+        // UPDATE existing item
+        await axios.put(`http://localhost:8000/api/lost-items/update/${currentItem.id}/`, form);
+      } else {
+        // ADD new item
+        await axios.post("http://localhost:8000/api/lost-items/add/", form);
+      }
+
+      // REFRESH lost items from backend
+      const res = await axios.get("http://localhost:8000/api/lost-items/");
+      setLostItems(res.data);
+      setShowEdit(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save item. Check console for errors.");
     }
-    setShowEdit(false);
   };
 
   // Open Delete modal
@@ -30,24 +42,36 @@ function LostItems({ lostItems, setLostItems, foundItems, setFoundItems }) {
     setShowDelete(true);
   };
 
-  const confirmDelete = () => {
-    setLostItems(lostItems.filter(i => i.id !== currentItem.id));
-    setShowDelete(false);
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:8000/api/lost-items/delete/${currentItem.id}/`);
+      const res = await axios.get("http://localhost:8000/api/lost-items/");
+      setLostItems(res.data);
+      setShowDelete(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete item.");
+    }
   };
 
   // Move item Lost -> Found
-  const markAsFound = (item) => {
-    // Remove from lost
-    setLostItems(lostItems.filter(i => i.id !== item.id));
+  const markAsFound = async (item) => {
+    try {
+      // 1. Remove from lost items in backend
+      await axios.put(`http://localhost:8000/api/lost-items/return/${item.id}/`);
 
-    // Add to found items
-    const foundItem = {
-      ...item,
-      finder: item.contact,
-      status: "Found"
-    };
-    delete foundItem.contact;
-    setFoundItems([foundItem, ...foundItems]);
+      // 2. Add to found items locally
+      const foundItem = { ...item, finder: item.contact, status: "Found" };
+      delete foundItem.contact;
+      setFoundItems([foundItem, ...foundItems]);
+
+      // 3. Refresh lost items from backend
+      const res = await axios.get("http://localhost:8000/api/lost-items/");
+      setLostItems(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to mark as found.");
+    }
   };
 
   const getStatusClass = (status) => {
@@ -91,9 +115,9 @@ function LostItems({ lostItems, setLostItems, foundItems, setFoundItems }) {
                 <td>{item.contact}</td>
                 <td><span className={`status-badge ${getStatusClass(item.status)}`}>{item.status}</span></td>
                 <td>
-                <button className="edit-btn" onClick={() => openEdit(item)}>Edit</button>
-                <button className="delete-btn" onClick={() => openDelete(item)}>Delete</button>
-                <button className="return-btn" onClick={() => markAsReturned(item)}>Mark as Returned</button>
+                  <button className="edit-btn" onClick={() => openEdit(item)}>Edit</button>
+                  <button className="delete-btn" onClick={() => openDelete(item)}>Delete</button>
+                  <button className="return-btn" onClick={() => markAsFound(item)}>Mark as Returned</button>
                 </td>
               </tr>
             ))}
