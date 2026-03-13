@@ -1,20 +1,33 @@
 import Navbar from "../components/Navbar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Dashboard() {
-  // Sample data
-  const [items, setItems] = useState([
-    { id: 1, name: "Wallet", description: "Black leather wallet", location: "Library", date: "March 5", contact: "Anna", status: "Lost" },
-    { id: 2, name: "Umbrella", description: "Blue folding umbrella", location: "Cafeteria", date: "March 6", contact: "Ben", status: "Found" },
-    { id: 3, name: "Keys", description: "House keys with keychain", location: "Gym", date: "March 4", contact: "Clara", status: "Returned" },
-    { id: 4, name: "Backpack", description: "Red backpack", location: "Cafeteria", date: "March 7", contact: "Dana", status: "Lost" },
-  ]);
 
-  const [filter, setFilter] = useState("All"); // current filter
+  const [items, setItems] = useState([]);
+  const [filter, setFilter] = useState("All");
 
-  const filteredItems = items.filter(item => filter === "All" ? true : item.status === filter);
+  // FETCH DATA FROM DJANGO
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/dashboard/")
+      .then(res => res.json())
+      .then(data => {
 
-  // Compute totals
+        const combinedItems = [
+          ...data.lost_items,
+          ...data.found_items,
+          ...data.returned_items
+        ];
+
+        setItems(combinedItems);
+      })
+      .catch(error => console.error("Error fetching dashboard:", error));
+
+  }, []);
+
+  const filteredItems = items.filter(item =>
+    filter === "All" ? true : item.status === filter
+  );
+
   const totalLost = items.filter(item => item.status === "Lost").length;
   const totalFound = items.filter(item => item.status === "Found").length;
   const totalReturned = items.filter(item => item.status === "Returned").length;
@@ -49,8 +62,7 @@ function Dashboard() {
                 borderRadius: "8px",
                 background: filter === tab ? "#FFD150" : "#eaeaea",
                 color: filter === tab ? "#0D1A63" : "#555",
-                fontWeight: 600,
-                transition: "0.3s"
+                fontWeight: 600
               }}
             >
               {tab} Items
@@ -60,24 +72,20 @@ function Dashboard() {
 
         {/* CARDS */}
         <div className="cards">
-          {filter === "All" || filter === "Lost" ? (
-            <div className="card">
-              <h3>Total Lost Items</h3>
-              <p>{totalLost}</p>
-            </div>
-          ) : null}
-          {filter === "All" || filter === "Found" ? (
-            <div className="card">
-              <h3>Total Found Items</h3>
-              <p>{totalFound}</p>
-            </div>
-          ) : null}
-          {filter === "All" || filter === "Returned" ? (
-            <div className="card">
-              <h3>Returned Items</h3>
-              <p>{totalReturned}</p>
-            </div>
-          ) : null}
+          <div className="card">
+            <h3>Total Lost Items</h3>
+            <p>{totalLost}</p>
+          </div>
+
+          <div className="card">
+            <h3>Total Found Items</h3>
+            <p>{totalFound}</p>
+          </div>
+
+          <div className="card">
+            <h3>Returned Items</h3>
+            <p>{totalReturned}</p>
+          </div>
         </div>
 
         {/* TABLE */}
@@ -96,14 +104,14 @@ function Dashboard() {
           <tbody>
             {filteredItems.map(item => (
               <tr key={item.id}>
-                <td>{item.name}</td>
+                <td>{item.name || item.item_name}</td>
                 <td>{item.description}</td>
                 <td>{item.location}</td>
-                <td>{item.date}</td>
-                <td>{item.contact}</td>
+                <td>{item.date || item.date_returned}</td>
+                <td>{item.contact || item.finder || item.finder_name}</td>
                 <td>
-                  <span className={`status-badge ${getStatusClass(item.status)}`}>
-                    {item.status}
+                  <span className={`status-badge ${getStatusClass(item.status || "Returned")}`}>
+                    {item.status || "Returned"}
                   </span>
                 </td>
               </tr>
