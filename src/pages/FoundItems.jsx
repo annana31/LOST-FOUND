@@ -4,8 +4,12 @@ import axios from "axios";
 
 function FoundItems({ returnedItems, setReturnedItems }) {
   const [foundItems, setFoundItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [thankYouItem, setThankYouItem] = useState(null);
   const [currentItem, setCurrentItem] = useState(null);
   const [form, setForm] = useState({ name: "", description: "", location: "", date: "", finder: "", status: "Found" });
 
@@ -13,6 +17,27 @@ function FoundItems({ returnedItems, setReturnedItems }) {
   useEffect(() => {
     fetchFoundItems();
   }, []);
+
+  // Filter items when search term or found items change
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredItems(foundItems);
+    } else {
+      const searchLower = searchTerm.toLowerCase();
+      const filtered = foundItems.filter(item => {
+        const searchableFields = [
+          item.name,
+          item.description,
+          item.location,
+          item.finder,
+          item.date
+        ].map(field => field?.toLowerCase() || '');
+        
+        return searchableFields.some(field => field.includes(searchLower));
+      });
+      setFilteredItems(filtered);
+    }
+  }, [searchTerm, foundItems]);
 
   const fetchFoundItems = async () => {
     try {
@@ -102,25 +127,144 @@ function FoundItems({ returnedItems, setReturnedItems }) {
   };
 
   const markAsReturned = async (item) => {
-  try {
+    try {
+      // Immediately remove the item from the UI
+      setFoundItems(prevItems => prevItems.filter(i => i.id !== item.id));
+      
+      // Call backend endpoint to mark as returned
+      await axios.put(
+        `http://localhost:8000/api/found-items/return/${item.id}/`
+      );
 
-    await axios.put(
-      `http://localhost:8000/api/found-items/return/${item.id}/`
-    );
+      // Set the thank you message with the item name
+      setThankYouItem(item.name);
+      setShowThankYou(true);
+      
+      // Auto-hide the thank you popup after 3 seconds
+      setTimeout(() => {
+        setShowThankYou(false);
+        setThankYouItem(null);
+      }, 3000);
 
-    fetchFoundItems();
+    } catch (error) {
+      console.error("Return Error:", error.response?.data || error);
+      // If there's an error, fetch the items again to ensure consistency
+      fetchFoundItems();
+    }
+  };
 
-  } catch (error) {
-    console.error("Return Error:", error.response?.data || error);
-  }
-};
+  const closeThankYou = () => {
+    setShowThankYou(false);
+    setThankYouItem(null);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
 
   return (
     <div className="container">
       <Navbar />
       <div className="content">
-        <h1>Found Items</h1>
-        <button className="add-btn" onClick={() => openEdit(null)}>Add Found Item</button>
+        <div style={{ 
+          display: "flex", 
+          justifyContent: "space-between", 
+          alignItems: "center", 
+          marginBottom: "20px",
+          flexWrap: "wrap",
+          gap: "15px"
+        }}>
+          <h1 style={{ margin: 0 }}>Found Items</h1>
+          
+          {/* Search Bar */}
+          <div style={{ position: "relative", minWidth: "300px" }}>
+            {/* Search Icon */}
+            <span style={{
+              position: "absolute",
+              left: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "#999",
+              fontSize: "16px",
+              zIndex: 1,
+              lineHeight: 1,
+              display: "flex",
+              alignItems: "center"
+            }}>
+              🔍
+            </span>
+            
+            {/* Input Field */}
+            <input
+              type="text"
+              placeholder="Search by name, description, location, finder..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              style={{
+                width: "100%",
+                padding: "12px 40px 12px 40px",
+                borderRadius: "25px",
+                border: "2px solid #eaeaea",
+                fontSize: "14px",
+                outline: "none",
+                transition: "border-color 0.3s",
+                boxSizing: "border-box"
+              }}
+              onFocus={(e) => e.target.style.borderColor = "#FFD150"}
+              onBlur={(e) => e.target.style.borderColor = "#eaeaea"}
+            />
+            
+            {/* Clear Button */}
+            {searchTerm && (
+              <button
+                onClick={clearSearch}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "20px",
+                  color: "#999",
+                  padding: "0",
+                  width: "20px",
+                  height: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  lineHeight: 1,
+                  zIndex: 1
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Add Button and Results Info */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "20px",
+          flexWrap: "wrap",
+          gap: "15px"
+        }}>
+          <button className="add-btn" onClick={() => openEdit(null)}>Add Found Item</button>
+          
+          {searchTerm && (
+            <p style={{ color: "#666", margin: 0 }}>
+              Found {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'} matching "{searchTerm}"
+            </p>
+          )}
+        </div>
 
         <table>
           <thead>
@@ -135,23 +279,31 @@ function FoundItems({ returnedItems, setReturnedItems }) {
             </tr>
           </thead>
           <tbody>
-            {foundItems.map((item) => (
-              <tr key={item.id}>
-                <td>{item.name}</td>
-                <td>{item.description}</td>
-                <td>{item.location}</td>
-                <td>{item.date}</td>
-                <td>{item.finder}</td>
-                <td>
-                  <span className={`status-badge ${getStatusClass(item.status)}`}>{item.status}</span>
-                </td>
-                <td>
-                  <button className="edit-btn" onClick={() => openEdit(item)}>Edit</button>
-                  <button className="delete-btn" onClick={() => openDelete(item)}>Delete</button>
-                  <button className="return-btn" onClick={() => markAsReturned(item)}>Mark as Returned</button>
+            {filteredItems.length > 0 ? (
+              filteredItems.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.name}</td>
+                  <td>{item.description}</td>
+                  <td>{item.location}</td>
+                  <td>{item.date}</td>
+                  <td>{item.finder}</td>
+                  <td>
+                    <span className={`status-badge ${getStatusClass(item.status)}`}>{item.status}</span>
+                  </td>
+                  <td>
+                    <button className="edit-btn" onClick={() => openEdit(item)}>Edit</button>
+                    <button className="delete-btn" onClick={() => openDelete(item)}>Delete</button>
+                    <button className="return-btn" onClick={() => markAsReturned(item)}>Mark as Returned</button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center", padding: "30px", color: "#999" }}>
+                  {searchTerm ? "No items match your search" : "No found items to display"}
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -187,6 +339,70 @@ function FoundItems({ returnedItems, setReturnedItems }) {
           </div>
         </div>
       )}
+
+      {/* THANK YOU POPUP */}
+      {showThankYou && (
+        <div className="modal-overlay">
+          <div className="modal" style={{ 
+            maxWidth: "400px",
+            textAlign: "center",
+            padding: "30px",
+            animation: "fadeIn 0.3s ease-in-out"
+          }}>
+            <div style={{
+              fontSize: "50px",
+              marginBottom: "15px"
+            }}>
+              🙏
+            </div>
+            <h2 style={{ color: "#4CAF50", marginBottom: "10px" }}>Thank You!</h2>
+            <p style={{ fontSize: "18px", marginBottom: "20px" }}>
+              Thank you for returning <strong>"{thankYouItem}"</strong>
+            </p>
+            <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
+              This item has been removed from the Found Items list.
+            </p>
+            <button 
+              onClick={closeThankYou}
+              style={{
+                backgroundColor: "#FFD150",
+                color: "#0D1A63",
+                border: "none",
+                padding: "10px 30px",
+                borderRadius: "25px",
+                fontSize: "16px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                transition: "all 0.3s"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = "#e6bc3c";
+                e.target.style.transform = "scale(1.05)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = "#FFD150";
+                e.target.style.transform = "scale(1)";
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Add animation styles */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 }

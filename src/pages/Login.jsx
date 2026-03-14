@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
+import Icon from "../assets/Icon.png"; // Adjust the path as needed
 
 function Login() {
 
@@ -33,7 +34,24 @@ function Login() {
     <div className="login-container">
       <div className="login-box">
 
-        <h1>Lost & Found</h1>
+        <div style={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          alignItems: "center", 
+          marginBottom: "20px" 
+        }}>
+          <img 
+            src={Icon} 
+            alt="Logo" 
+            style={{ 
+              width: "200px", 
+              height: "200px", 
+              objectFit: "contain",
+              marginBottom: "10px"
+            }} 
+          />
+    
+        </div>
 
         <form onSubmit={handleLogin}>
           <input
