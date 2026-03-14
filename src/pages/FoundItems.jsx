@@ -1,6 +1,7 @@
 import Navbar from "../components/Navbar";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import AriIcon from "../assets/Ari.png"; // Adjust the path as needed
 
 function FoundItems({ returnedItems, setReturnedItems }) {
   const [foundItems, setFoundItems] = useState([]);
@@ -344,44 +345,66 @@ function FoundItems({ returnedItems, setReturnedItems }) {
       {showThankYou && (
         <div className="modal-overlay">
           <div className="modal" style={{ 
-            maxWidth: "400px",
+            maxWidth: "450px",
             textAlign: "center",
-            padding: "30px",
-            animation: "fadeIn 0.3s ease-in-out"
+            padding: "35px",
+            animation: "popIn 0.4s ease-in-out"
           }}>
-            <div style={{
-              fontSize: "50px",
-              marginBottom: "15px"
+            <div style={{ 
+              display: "flex", 
+              flexDirection: "column", 
+              alignItems: "center",
+              marginBottom: "20px"
             }}>
-              🙏
+              <img 
+                src={AriIcon} 
+                alt="Thank You Icon" 
+                style={{ 
+                  width: "300px", 
+                  height: "300px", 
+                  objectFit: "contain",
+                  marginBottom: "15px",
+                  animation: "bounce 0.5s ease-in-out"
+                }} 
+              />
+              <h2 style={{ color: "#4CAF50", margin: 0, fontSize: "28px" }}>Thank You!</h2>
             </div>
-            <h2 style={{ color: "#4CAF50", marginBottom: "10px" }}>Thank You!</h2>
-            <p style={{ fontSize: "18px", marginBottom: "20px" }}>
-              Thank you for returning <strong>"{thankYouItem}"</strong>
+            
+            <p style={{ fontSize: "18px", marginBottom: "15px", lineHeight: "1.6" }}>
+              Thank you for returning <strong style={{ color: "#FFD150", fontSize: "20px" }}>"{thankYouItem}"</strong>
             </p>
-            <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
-              This item has been removed from the Found Items list.
+            
+            <p style={{ fontSize: "15px", color: "#666", marginBottom: "25px", fontStyle: "italic" }}>
+              "No act of kindness, no matter how small, is ever wasted."
             </p>
+            
+            <p style={{ fontSize: "14px", color: "#4CAF50", marginBottom: "25px", fontWeight: "bold" }}>
+              ✓ This item has been removed from the Found Items list
+            </p>
+            
             <button 
               onClick={closeThankYou}
               style={{
                 backgroundColor: "#FFD150",
                 color: "#0D1A63",
                 border: "none",
-                padding: "10px 30px",
-                borderRadius: "25px",
+                padding: "12px 35px",
+                borderRadius: "30px",
                 fontSize: "16px",
                 fontWeight: "bold",
                 cursor: "pointer",
-                transition: "all 0.3s"
+                transition: "all 0.3s",
+                boxShadow: "0 4px 10px rgba(255, 209, 80, 0.3)"
               }}
               onMouseEnter={(e) => {
                 e.target.style.backgroundColor = "#e6bc3c";
                 e.target.style.transform = "scale(1.05)";
+                e.target.style.boxShadow = "0 6px 15px rgba(255, 209, 80, 0.4)";
               }}
               onMouseLeave={(e) => {
                 e.target.style.backgroundColor = "#FFD150";
                 e.target.style.transform = "scale(1)";
+                e.target.style.boxShadow = "0 4px 10px rgba(255, 209, 80, 0.3)";
               }}
             >
               Close
@@ -400,6 +423,26 @@ function FoundItems({ returnedItems, setReturnedItems }) {
           to {
             opacity: 1;
             transform: scale(1);
+          }
+        }
+        
+        @keyframes popIn {
+          0% {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        
+        @keyframes bounce {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-10px);
           }
         }
       `}</style>
